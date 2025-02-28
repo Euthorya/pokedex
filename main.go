@@ -7,13 +7,17 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	pokecache "github.com/Euthorya/pokedex/internal"
 )
 
+var cache *pokecache.Cache
+
 func main() {
-	//var reader io.Reader
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := commands()
 	config := Config{}
+	cache = pokecache.NewCache()
 	for {
 		fmt.Print("Pokedex >")
 		scanner.Scan()
@@ -53,6 +57,9 @@ func commandMap(config *Config) error {
 	url := config.Next
 	if url == "" {
 		url = "https://pokeapi.co/api/v2/location-area"
+	}
+	if cached, in := cache.Get(url); in {
+		return cached
 	}
 	res, err := http.Get(url)
 	if err != nil {
